@@ -59,6 +59,9 @@ public class ScrollSnapRect : MonoBehaviour, IBeginDragHandler, IEndDragHandler,
     // container with Image components - one Image for each page
     private List<Image> _pageSelectionImages;
 
+    bool bDragEnabled = true;
+    bool bCharSelected = false;
+
     //------------------------------------------------------------------------
     void Start() {
         _scrollRectComponent = GetComponent<ScrollRect>();
@@ -112,7 +115,23 @@ public class ScrollSnapRect : MonoBehaviour, IBeginDragHandler, IEndDragHandler,
             if (_showPageSelection) {
                 SetPageSelection(GetNearestPage());
             }
+        }else
+
+        if ( !bCharSelected && _scrollRectComponent.content.GetChild(_currentPage).gameObject.tag == "CharacterSelect")
+        {
+            Debug.Log(_scrollRectComponent.content.GetChild(_currentPage).gameObject);
+            _scrollRectComponent.enabled = false;
+            bDragEnabled = false;
         }
+
+    }
+
+    //------------------------------------------------------------------------
+    public void SetScrollRectComponent_enabled(bool bEnabled) 
+    {
+        _scrollRectComponent.enabled = bEnabled;
+        bDragEnabled = bEnabled;
+        bCharSelected = bEnabled;
     }
 
     //------------------------------------------------------------------------
@@ -254,28 +273,29 @@ public class ScrollSnapRect : MonoBehaviour, IBeginDragHandler, IEndDragHandler,
 
     //------------------------------------------------------------------------
     public void OnBeginDrag(PointerEventData aEventData) {
-        //Debug.Log(aEventData.selectedObject);
-        if (Input.GetMouseButton(0))
-        {
-            RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);//straight ray to mouse position
-            if (Physics.Raycast(ray, out hit))
+        if (bDragEnabled) { 
+            //Debug.Log(aEventData.selectedObject);
+            if (Input.GetMouseButton(0))
             {
-                Debug.Log(hit.collider.name);
-               // hit.collider.gameObject
-                _scrollRectComponent.enabled = false;
-               // this.enabled = false;
-            }
-            else
-                 _scrollRectComponent.enabled = true;
+                RaycastHit hit;
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);//straight ray to mouse position
+                if (Physics.Raycast(ray, out hit))
+                {
+                    Debug.Log(hit.collider.name);
+                   // hit.collider.gameObject
+                    _scrollRectComponent.enabled = false;
+                   // this.enabled = false;
+                }
+                else
+                     _scrollRectComponent.enabled = true;
 
+            }
+        
+            // if currently lerping, then stop it as user is draging
+            _lerp = false;
+            // not dragging yet
+            _dragging = false;
         }
-        
-        // if currently lerping, then stop it as user is draging
-        _lerp = false;
-        // not dragging yet
-        _dragging = false;
-        
     }
 
     //------------------------------------------------------------------------
